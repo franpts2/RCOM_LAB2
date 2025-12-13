@@ -214,8 +214,10 @@ In the Router Cons:
 
 TUX Y3:
 
-```html
-ping 172.16.Y0.254 ping 172.16.Y1.1 ping 172.16.Y1.254
+```bash
+ping 172.16.Y0.254 
+ping 172.16.Y1.1 
+ping 172.16.Y1.254
 ```
 
 TUX Y2:
