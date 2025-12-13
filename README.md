@@ -312,8 +312,8 @@ files in **rcom:rcom** mode:
 ./download ftp://ftp.netlab.fe.up.pt/pub/teste.txt
 
 ./download ftp://rcom:rcom@ftp.netlab.fe.up.pt/var/ftp/pipe.txt
-./download ftp://rcom:rcom@ftp.netlab.fe.up.pt/var/ftp//pub/teste.txt
-./download ftp://rcom:rcom@ftp.netlab.fe.up.pt/var/ftp//pub/ubuntu-24.04.2-desktop-amd64.iso
+./download ftp://rcom:rcom@ftp.netlab.fe.up.pt/var/ftp/pub/teste.txt
+./download ftp://rcom:rcom@ftp.netlab.fe.up.pt/var/ftp/pub/ubuntu-24.04.2-desktop-amd64.iso
 ```
 
 **Public FTP Servers**
