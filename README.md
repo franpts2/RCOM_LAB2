@@ -235,7 +235,8 @@ ping 172.16.Y0.1
 traceroute 172.16.Y0.1 // 3 respostas
 
 // change the routes to use again tux4 as the gateway to subnet instead of Rc
-route add -net 172.16.Y0.0/24 gw 172.16.Y1.253 // if file exists, del then add again
+route del -net 172.16.Y0.0/24 gw 172.16.Y1.253
+route add -net 172.16.Y0.0/24 gw 172.16.Y1.253
 traceroute 172.16.Y0.1 // 2 respostas
 
 // activate the acceptance of icmp redirect
