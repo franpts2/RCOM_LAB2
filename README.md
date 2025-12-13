@@ -15,11 +15,11 @@ Reset system configuration of switch and router via GTK Term (you need to change
 Connect to all Tuxs via ssh:
 
 ```bash
-ssh netedu@tux82
+ssh netedu@tuxY2
 
-ssh netedu@tux83
+ssh netedu@tuxY3
 
-ssh netedu@tux84
+ssh netedu@tuxY4
 ```
 
 Go to root on all Tuxs:
