@@ -1,6 +1,7 @@
 # Experiences Script 
 
 ## TUXs
+(DO IT IN TUX2)
 
 **Instructions:**
 1. create and open file `nano setup_from_tux2.sh`
@@ -104,4 +105,32 @@ ssh -t netedu@$IP_TUX3 "echo '$PASS' | sudo -S bash -c '
 echo "--- Configuration Complete ---"
 
 
+```
+
+## GTKTERM
+
+(Y = 1)
+### SWITCH
+```
+/interface bridge add name=bridge10
+/interface bridge add name=bridge11
+/interface bridge port remove [find interface=ether10]
+/interface bridge port remove [find interface=ether14]
+/interface bridge port remove [find interface=ether15]
+/interface bridge port remove [find interface=ether16]
+/interface bridge port remove [find interface=ether17]
+/interface bridge port add bridge=bridge10 interface=ether16
+/interface bridge port add bridge=bridge10 interface=ether15
+/interface bridge port add bridge=bridge11 interface=ether14
+/interface bridge port add bridge=bridge11 interface=ether17
+/interface bridge port add bridge=bridge11 interface=ether10
+```
+
+### ROUTER
+
+```
+/ip address add address=172.16.1.11/24 interface=ether1 
+/ip address add address=172.16.11.254/24 interface=ether2 
+/ip route add dst-address=172.16.10.0/24 gateway=172.16.11.253 
+/ip firewall nat add chain=srcnat action=masquerade out-interface=ether1
 ```
