@@ -1,9 +1,3 @@
-/*
- * download.c
- * Implementation of a simple FTP client (RFC959) using TCP sockets.
- * Based on clientTCP.c and getip.c provided in Lab 2.
- */
-
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -16,7 +10,6 @@
 #define FTP_PORT 21
 #define MAX_LENGTH 1024
 
-/* Struct to hold parsed URL information */
 struct URL {
     char user[128];
     char password[128];
@@ -25,27 +18,25 @@ struct URL {
     char filename[128];
 };
 
-/* Helper: Parse the URL into the struct */
 int parse_url(char *input, struct URL *url) {
     char *p = input;
     
-    // Default credentials
+    // default credentials 
     strcpy(url->user, "anonymous");
     strcpy(url->password, "anonymous@");
 
-    // Check for ftp://
+    // check for ftp://
     if (strncmp(p, "ftp://", 6) != 0) {
         printf("Error: URL must start with ftp://\n");
         return -1;
     }
-    p += 6; // Move past ftp://
+    p += 6; // move past ftp://
 
-    // Check for credentials (presence of @)
+    // check for credentials (@)
     char *at_sign = strchr(p, '@');
     char *slash = strchr(p, '/');
 
     if (at_sign && (!slash || at_sign < slash)) {
-        // Credentials found
         char credentials[256];
         int len = at_sign - p;
         strncpy(credentials, p, len);
@@ -62,7 +53,7 @@ int parse_url(char *input, struct URL *url) {
         p = at_sign + 1;
     }
 
-    // Parse Host and Path
+    // parse host and path
     slash = strchr(p, '/');
     if (slash) {
         int len = slash - p;
@@ -71,10 +62,10 @@ int parse_url(char *input, struct URL *url) {
         strcpy(url->path, slash + 1);
     } else {
         strcpy(url->host, p);
-        strcpy(url->path, ""); // No path provided
+        strcpy(url->path, ""); // no path provided
     }
 
-    // Extract filename from path for saving locally
+    // extract filename
     char *last_slash = strrchr(url->path, '/');
     if (last_slash) {
         strcpy(url->filename, last_slash + 1);
@@ -87,36 +78,31 @@ int parse_url(char *input, struct URL *url) {
     return 0;
 }
 
-/* Helper: Read full response (handling multiline) */
+
 int read_response(int sockfd, char *buffer, size_t size) {
     memset(buffer, 0, size);
     int res = 0;
     char ch;
-    int line_start = 0; // Tracks where the current line starts in the buffer
+    int line_start = 0; 
 
-    // Read byte by byte
     while(read(sockfd, &ch, 1) > 0) {
         if (res < size - 1) {
             buffer[res++] = ch;
         }
 
         if (ch == '\n') {
-            // Check if this is the end of the response: "XYZ <message>\n"
-            // Multiline responses look like "XYZ-<message>\n"
-            // We check if the 4th character of the current line is a SPACE
             if (buffer[line_start + 3] == ' ') {
                 break;
             }
-            // If it's a '-', we keep reading the next line
             line_start = res;
         }
     }
-    buffer[res] = '\0'; // Null-terminate
-    printf("%s", buffer); // Print entirely to console
+    buffer[res] = '\0'; 
+    printf("%s", buffer); 
     return res;
 }
 
-/* Helper: Create and connect a socket (Reused from clientTCP.c) */
+
 int create_socket(char *ip, int port) {
     int sockfd;
     struct sockaddr_in server_addr;
@@ -152,7 +138,7 @@ int main(int argc, char **argv) {
     printf("Parsed Info:\nUser: %s\nPass: %s\nHost: %s\nPath: %s\nFile: %s\n\n", 
            url.user, url.password, url.host, url.path, url.filename);
 
-    /* 1. DNS Resolution (Reused from getip.c) */
+    // dns resolution 
     struct hostent *h;
     if ((h = gethostbyname(url.host)) == NULL) {
         herror("gethostbyname()");
@@ -161,33 +147,33 @@ int main(int argc, char **argv) {
     char *server_ip = inet_ntoa(*((struct in_addr *) h->h_addr));
     printf("IP Address : %s\n", server_ip);
 
-    /* 2. Control Connection  */
+    // control connection 
     int control_sock = create_socket(server_ip, FTP_PORT);
     if (control_sock < 0) exit(-1);
 
     char buf[MAX_LENGTH];
-    read_response(control_sock, buf, MAX_LENGTH); // Read 220 Greeting
+    read_response(control_sock, buf, MAX_LENGTH); //  220 greeting
 
-    /* 3. Authentication */
+    // authentication
     sprintf(buf, "USER %s\r\n", url.user);
     printf("C: %s", buf);
     write(control_sock, buf, strlen(buf));
-    read_response(control_sock, buf, MAX_LENGTH); // Expect 331
+    read_response(control_sock, buf, MAX_LENGTH); //expect 331
 
     sprintf(buf, "PASS %s\r\n", url.password);
-    printf("C: PASS *****\r\n"); // Hide password in logs
+    printf("C: PASS *****\r\n"); // hide password 
     write(control_sock, buf, strlen(buf));
-    read_response(control_sock, buf, MAX_LENGTH); // Expect 230
+    read_response(control_sock, buf, MAX_LENGTH); // expect 230
 
-    /* 4. Passive Mode  */
+    // passive mode 
     sprintf(buf, "PASV\r\n");
     printf("C: %s", buf);
     write(control_sock, buf, strlen(buf));
-    read_response(control_sock, buf, MAX_LENGTH); // Expect 227
+    read_response(control_sock, buf, MAX_LENGTH); // expect 227
 
-    // Parse PASV response: 227 Entering Passive Mode (h1,h2,h3,h4,p1,p2).
+    // parse PASV response: 227 entering passive mode 
     int ip1, ip2, ip3, ip4, p1, p2;
-    // Find the opening parenthesis
+ 
     char *start_ip = strchr(buf, '(');
     if (start_ip == NULL) {
         printf("Error: Could not parse PASV response. Server said: %s\n", buf);
@@ -201,32 +187,44 @@ int main(int argc, char **argv) {
     sprintf(data_ip_str, "%d.%d.%d.%d", ip1, ip2, ip3, ip4);
     printf("Data connection to: %s : %d\n", data_ip_str, data_port);
 
-    /* 5. Data Connection  */
+    // data connection
     int data_sock = create_socket(data_ip_str, data_port);
     if (data_sock < 0) {
         printf("Failed to connect to data port.\n");
         exit(-1);
     }
 
-    /* 6. Request File */
+    // request file 
     sprintf(buf, "RETR %s\r\n", url.path);
     printf("C: %s", buf);
     write(control_sock, buf, strlen(buf));
-    read_response(control_sock, buf, MAX_LENGTH); // Expect 150
+    read_response(control_sock, buf, MAX_LENGTH); // expect 150
 
-    /* 7. Download File */
+    // download file
     FILE *fp = fopen(url.filename, "wb");
     int bytes_read;
+    long long total_bytes = 0; 
+
+    printf("Starting download... please wait.\n");
+
     while ((bytes_read = read(data_sock, buf, MAX_LENGTH)) > 0) {
         fwrite(buf, 1, bytes_read, fp);
+        total_bytes += bytes_read;
+
+        // print progress every 10 mb
+        if (total_bytes % (10 * 1024 * 1024) < MAX_LENGTH) {
+            printf("\rDownloaded: %lld MB", total_bytes / (1024 * 1024));
+            fflush(stdout); 
+        }
     }
+    printf("\n"); 
     fclose(fp);
-    close(data_sock); // Close data socket first
+    close(data_sock);
 
-    /* 8. Final Response */
-    read_response(control_sock, buf, MAX_LENGTH); // Expect 226 Transfer complete
+    // final Response
+    read_response(control_sock, buf, MAX_LENGTH); // esperar 226 transfer complete
 
-    /* 9. Cleanup */
+    // clean up
     sprintf(buf, "QUIT\r\n");
     printf("C: %s", buf);
     write(control_sock, buf, strlen(buf));
